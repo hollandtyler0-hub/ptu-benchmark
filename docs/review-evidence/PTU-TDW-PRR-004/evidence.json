@@ -1,0 +1,7 @@
+[
+ {
+  "task": "PTU-TDW-PRR-004",
+  "trajectory": "docs/review-evidence/PTU-TDW-PRR-004/derived-compliant-get_pr-only.json",
+  "expect": "pass"
+ }
+]

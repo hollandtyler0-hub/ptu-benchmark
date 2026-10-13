@@ -1,0 +1,13 @@
+- {id: haiku-4-5, profile: 'us.anthropic.claude-haiku-4-5-20251001-v1:0', vendor: anthropic, thinking: none, cache_points: true, echo_reasoning: true, max_tokens: 4096, concurrency: 3, tier: unavailable, availability: aws_suspended}
+- {id: sonnet-4-6, profile: 'us.anthropic.claude-sonnet-4-6', vendor: anthropic, thinking: adaptive, cache_points: true, echo_reasoning: true, max_tokens: 16000, concurrency: 3, tier: unavailable, availability: aws_suspended}
+- {id: opus-4-6, profile: 'global.anthropic.claude-opus-4-6-v1', vendor: anthropic, thinking: adaptive, cache_points: true, echo_reasoning: true, max_tokens: 16000, concurrency: 2, tier: unavailable, availability: aws_suspended}
+- {id: sonnet-5, profile: 'us.anthropic.claude-sonnet-5', vendor: anthropic, thinking: default, cache_points: true, echo_reasoning: true, max_tokens: 16000, concurrency: 3, tier: unavailable, availability: aws_suspended}
+- {id: opus-5-5, profile: 'us.anthropic.claude-opus-5-5', vendor: anthropic, thinking: default, cache_points: true, echo_reasoning: true, max_tokens: 16000, concurrency: 3, tier: unavailable, availability: aws_suspended}
+- {id: fable-5-1, profile: 'us.anthropic.claude-fable-5-1', vendor: anthropic, thinking: default, cache_points: true, echo_reasoning: true, max_tokens: 16000, concurrency: 3, tier: unavailable, availability: aws_suspended}
+- {id: gpt-6-sol, profile: 'global.openai.gpt-6-sol', vendor: openai, thinking: default, cache_points: false, echo_reasoning: false, max_tokens: 16000, concurrency: 3, tier: unavailable, availability: aws_suspended}
+- {id: cc-haiku, vendor: harness, harness: claude-code, model: haiku, max_tokens: 16000, tier: required}
+- {id: cc-sonnet, vendor: harness, harness: claude-code, model: sonnet, max_tokens: 16000, tier: required}
+- {id: cc-fable-5-1, vendor: harness, harness: claude-code, model: fable, max_tokens: 16000, tier: harness}
+- {id: cc-opus-5-5, vendor: harness, harness: claude-code, model: opus, max_tokens: 16000, tier: harness}
+- {id: cc-sonnet-5, vendor: harness, harness: claude-code, model: sonnet, max_tokens: 16000, tier: harness}
+- {id: codex-gpt-6-sol, vendor: harness, harness: codex, model: gpt-6-sol, max_tokens: 16000, tier: harness}

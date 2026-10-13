@@ -1,0 +1,5 @@
+workspace: tidewater
+reserved_domains: [example.com, example.net, example.org]
+company_domain: tidewater.example.com
+forge_host: forge.example.com
+external_domain: vendorsync.example.net

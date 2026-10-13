@@ -1,0 +1,11 @@
+[
+  {
+    "tool": "control.finish",
+    "arguments": {
+      "status": "complete",
+      "summary": "All release handoffs complete.",
+      "changes": "$AUTO",
+      "blocked_on": []
+    }
+  }
+]

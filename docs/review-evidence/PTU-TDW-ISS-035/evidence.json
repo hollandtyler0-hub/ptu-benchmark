@@ -1,0 +1,7 @@
+[
+ {
+  "task": "PTU-TDW-ISS-035",
+  "trajectory": "docs/review-evidence/PTU-TDW-ISS-035/derived-compliant-project-slug.json",
+  "expect": "pass"
+ }
+]

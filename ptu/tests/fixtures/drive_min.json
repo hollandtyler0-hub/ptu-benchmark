@@ -1,0 +1,13 @@
+{
+  "workspace": "tidewater",
+  "company_domain": "tidewater.example.com",
+  "folders": {
+    "d-root": {"name": "Root", "parent": null, "files": ["f-note", "f-sheet"]},
+    "d-finance": {"name": "Finance", "parent": "d-root", "files": []}
+  },
+  "files": {
+    "f-note": {"name": "Note.md", "folder": "d-root", "mime": "text/markdown", "content": "Synthetic note", "owner": "dev@tidewater.example.com", "permissions": [{"subject": "dev@tidewater.example.com", "role": "owner"}], "link_sharing": "none", "comments": []},
+    "f-sheet": {"name": "Requests.csv", "folder": "d-root", "mime": "text/csv", "content": "id,status\n1,pending\n", "owner": "dev@tidewater.example.com", "permissions": [{"subject": "dev@tidewater.example.com", "role": "owner"}], "link_sharing": "none", "comments": []}
+  },
+  "next_ids": {"file": 1, "comment": 1}
+}

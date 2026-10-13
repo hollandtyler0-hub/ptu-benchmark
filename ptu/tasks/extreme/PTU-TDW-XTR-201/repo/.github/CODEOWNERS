@@ -1,0 +1,4 @@
+* @tidewater/billing
+/billing_core/tax/ @tidewater/finance-eng
+/migrations/ @tidewater/finance-eng
+/.github/ @tidewater/platform

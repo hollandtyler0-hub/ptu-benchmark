@@ -1,0 +1,194 @@
+#!/usr/bin/env python3
+"""Single-process Git push client for the PTU scratch workstation."""
+
+import base64
+import hashlib
+import json
+import os
+import re
+import socket
+import sys
+import zlib
+from pathlib import Path
+
+
+SHA = re.compile(r"[0-9a-f]{40}\Z")
+
+
+def fail(message):
+    print(message, file=sys.stderr)
+    return 1
+
+
+def main(argv):
+    if len(argv) >= 3 and argv[0] == 'worktree':
+        _, repo, command, *arguments = argv
+        identity = None
+        if len(arguments) >= 3 and arguments[-3] == '--ptu-identity':
+            identity = {'name': arguments[-2], 'email': arguments[-1]}
+            arguments = arguments[:-3]
+        git_dir = Path('.git')
+        if not git_dir.is_dir() or git_dir.is_symlink():
+            return fail('E_GIT_WORKTREE')
+        socket_dir = os.environ.get('PTU_SOCKET_DIR')
+        sock_path = (Path(socket_dir) if socket_dir else Path(os.environ['HOME']).parent.parent / 'sockets') / 'gitproxy.sock'
+        wire = (json.dumps({'op': 'worktree', 'repo': repo, 'command': command,
+                            'args': arguments, 'identity': identity}, separators=(',', ':')) + '\n').encode()
+        if len(wire) > 4096:
+            return fail('E_GIT_ARGS')
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+            client.settimeout(180)
+            client.connect(str(sock_path))
+            client.sendall(wire)
+            response = bytearray()
+            while b'\n' not in response:
+                part = client.recv(65536)
+                if not part or len(response) + len(part) > 65536:
+                    return fail('E_GIT_RESPONSE')
+                response.extend(part)
+        answer = json.loads(bytes(response).split(b'\n', 1)[0])
+        if answer.get('ok') is not True:
+            return fail(answer.get('message', 'E_GIT_REQUEST'))
+        sys.stdout.write(answer.get('output', ''))
+        return answer.get('exit_code', 1)
+    if len(argv) == 3 and argv[0] == 'fetch' and argv[2] == 'main':
+        repo = argv[1]
+        git_dir = Path('.git')
+        if not git_dir.is_dir() or git_dir.is_symlink():
+            return fail('E_GIT_WORKTREE')
+        remote = git_dir / 'refs' / 'remotes' / 'origin' / 'main'
+        if remote.is_symlink():
+            return fail('E_GIT_FETCH')
+        if remote.is_file():
+            have = remote.read_text().strip()
+        else:
+            packed = git_dir / 'packed-refs'
+            if not packed.is_file() or packed.is_symlink():
+                return fail('E_GIT_FETCH')
+            have = next((line[:40] for line in packed.read_text().splitlines()
+                         if line.endswith(' refs/remotes/origin/main')), '')
+        if not SHA.fullmatch(have):
+            return fail('E_GIT_FETCH')
+        socket_dir = os.environ.get('PTU_SOCKET_DIR')
+        sock_path = (Path(socket_dir) if socket_dir else Path(os.environ['HOME']).parent.parent / 'sockets') / 'gitproxy.sock'
+        wire = (json.dumps({'op': 'fetch', 'repo': repo, 'ref': 'refs/heads/main',
+                            'have': have}, separators=(',', ':')) + '\n').encode()
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+            client.settimeout(180)
+            client.connect(str(sock_path))
+            client.sendall(wire)
+            response = bytearray()
+            while b'\n' not in response:
+                part = client.recv(65536)
+                if not part or len(response) + len(part) > 16 * 1024 * 1024:
+                    return fail('E_GIT_RESPONSE')
+                response.extend(part)
+        answer = json.loads(bytes(response).split(b'\n', 1)[0])
+        if answer.get('ok') is not True or not SHA.fullmatch(answer.get('sha', '')):
+            return fail('E_GIT_FETCH')
+        for sha, encoded in answer.get('objects', {}).items():
+            raw = base64.b64decode(encoded, validate=True)
+            if not SHA.fullmatch(sha) or hashlib.sha1(raw).hexdigest() != sha:
+                return fail('E_GIT_FETCH')
+            target = git_dir / 'objects' / sha[:2] / sha[2:]
+            if target.is_symlink():
+                return fail('E_GIT_FETCH')
+            target.parent.mkdir(exist_ok=True)
+            if not target.exists():
+                target.write_bytes(zlib.compress(raw))
+        remote.parent.mkdir(parents=True, exist_ok=True)
+        remote.write_text(answer['sha'] + '\n')
+        print('Fetched origin/main')
+        return 0
+    if len(argv) not in {3, 4} or argv[0] != "push" or (len(argv) == 4 and argv[3] != "--force"):
+        return fail("usage: ptu-git push ORG/REPO HEAD:refs/heads/BRANCH [--force]")
+    _, repo, refspec, *extra = argv
+    if ":" not in refspec:
+        return fail("E_GIT_REF")
+    source, ref = refspec.split(":", 1)
+    git_dir = Path(".git")
+    if not git_dir.is_dir() or git_dir.is_symlink():
+        return fail("E_GIT_WORKTREE")
+    if source == "HEAD":
+        head = (git_dir / "HEAD").read_text().strip()
+        source = head.removeprefix("ref: ") if head.startswith("ref: ") else head
+    if SHA.fullmatch(source):
+        sha = source
+    else:
+        target = git_dir / source
+        if not source.startswith("refs/heads/") or ".." in source or not target.is_file():
+            return fail("E_GIT_REF")
+        sha = target.read_text().strip()
+    if not SHA.fullmatch(sha):
+        return fail("E_GIT_REF")
+    objects = {}
+    object_root = git_dir / "objects"
+    pending = [sha]
+    total = 0
+    while pending:
+        name = pending.pop()
+        if name in objects:
+            continue
+        if not SHA.fullmatch(name) or len(objects) >= 5000:
+            return fail("E_GIT_OBJECT")
+        path = object_root / name[:2] / name[2:]
+        if path.is_symlink() or not path.is_file():
+            return fail("E_GIT_PACKED_OBJECT")
+        raw = zlib.decompress(path.read_bytes())
+        total += len(raw)
+        if total > 12 * 1024 * 1024 or hashlib.sha1(raw).hexdigest() != name:
+            return fail("E_GIT_OBJECT")
+        kind, body = raw.split(b"\0", 1)
+        if kind.startswith(b"commit "):
+            for line in body.split(b"\n"):
+                if line.startswith((b"tree ", b"parent ")):
+                    pending.append(line.split(b" ", 1)[1].decode("ascii"))
+                elif not line:
+                    break
+        elif kind.startswith(b"tree "):
+            index = 0
+            while index < len(body):
+                nul = body.find(b"\0", index)
+                if nul < 0 or nul + 21 > len(body):
+                    return fail("E_GIT_OBJECT")
+                mode = body[index:nul].split(b" ", 1)[0]
+                child = body[nul + 1:nul + 21].hex()
+                if mode != b"160000":  # submodule commit is not transferred
+                    pending.append(child)
+                index = nul + 21
+        elif kind.startswith(b"tag "):
+            for line in body.split(b"\n"):
+                if line.startswith(b"object "):
+                    pending.append(line.split(b" ", 1)[1].decode("ascii"))
+                    break
+        elif not kind.startswith(b"blob "):
+            return fail("E_GIT_OBJECT")
+        objects[name] = base64.b64encode(raw).decode("ascii")
+    socket_dir = os.environ.get("PTU_SOCKET_DIR")
+    sock_path = (Path(socket_dir) if socket_dir else Path(os.environ["HOME"]).parent.parent / "sockets") / "gitproxy.sock"
+    request = {"op": "push", "repo": repo, "ref": ref, "new": sha,
+               "force": bool(extra), "objects": objects}
+    wire = (json.dumps(request, separators=(",", ":")) + "\n").encode()
+    if len(wire) > 16 * 1024 * 1024:
+        return fail("E_GIT_REQUEST")
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
+        client.settimeout(180)
+        client.connect(str(sock_path))
+        client.sendall(wire)
+        response = bytearray()
+        while b"\n" not in response:
+            part = client.recv(65536)
+            if not part or len(response) + len(part) > 65536:
+                return fail("E_GIT_RESPONSE")
+            response.extend(part)
+    answer = json.loads(bytes(response).split(b"\n", 1)[0])
+    message = answer.get("message", "E_GIT_RESPONSE")
+    print(message)
+    return 0 if answer.get("ok") is True else 1
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main(sys.argv[1:]))
+    except (OSError, ValueError, KeyError, zlib.error, json.JSONDecodeError):
+        raise SystemExit(fail("E_GIT_CLIENT"))

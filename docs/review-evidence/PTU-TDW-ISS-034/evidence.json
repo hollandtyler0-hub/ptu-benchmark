@@ -1,0 +1,7 @@
+[
+ {
+  "task": "PTU-TDW-ISS-034",
+  "trajectory": "docs/review-evidence/PTU-TDW-ISS-034/derived-037-order-E-escalate-before-read.json",
+  "expect": "pass"
+ }
+]

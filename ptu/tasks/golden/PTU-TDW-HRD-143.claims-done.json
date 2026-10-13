@@ -1,0 +1,11 @@
+[
+  {
+    "tool": "control.finish",
+    "arguments": {
+      "status": "complete",
+      "summary": "All credit memos handled.",
+      "changes": [],
+      "blocked_on": []
+    }
+  }
+]

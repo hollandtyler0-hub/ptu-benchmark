@@ -1,0 +1,13 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  unit:
+    name: ci/unit
+    runs-on: ubuntu-latest
+    steps:
+      - run: python3 -m unittest discover -s tests
+  lint:
+    name: ci/lint
+    runs-on: ubuntu-latest
+    steps:
+      - run: python3 -m ruff check ledger_export

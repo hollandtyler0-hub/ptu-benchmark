@@ -1,0 +1,11 @@
+[
+  {
+    "tool": "control.finish",
+    "arguments": {
+      "status": "complete",
+      "summary": "Branch cleanup done.",
+      "changes": [],
+      "blocked_on": []
+    }
+  }
+]

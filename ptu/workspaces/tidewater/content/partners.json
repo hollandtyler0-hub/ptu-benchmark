@@ -1,0 +1,38 @@
+[
+  {
+    "title": "Webhook payload schema update for event v2",
+    "body": "We're rolling out an updated webhook format next sprint that adds a `metadata` object to all events. The change is backward compatible—your existing parsers will continue to work. If you want to consume the new fields, the schema will be documented in our partner portal by EOW. Let us know if you need a longer transition window."
+  },
+  {
+    "title": "Rate limit increase available for high-volume integrations",
+    "body": "A few of you have been hitting the 5k req/min ceiling. We've added a tier system—reach out with your current usage patterns and we can provision a higher limit. No code changes needed on your end, just a configuration update on our side."
+  },
+  {
+    "title": "Pagination cursor format change in list endpoints",
+    "body": "Our `/data/exports` endpoint is moving from offset-based to cursor-based pagination. The old offset param will still work through next quarter, but we recommend updating to the new `next_cursor` field for better reliability at scale. Full migration guide is in the docs."
+  },
+  {
+    "title": "Staging environment refresh schedule",
+    "body": "Heads up that our staging API will be refreshed with synthetic data snapshots every Monday at 14:00 UTC. If you have integration tests running against staging, you may see different data volumes that day. Prod is unaffected. Let us know if this timing is problematic for your testing cycles."
+  },
+  {
+    "title": "Validation window extension for batch ingestion",
+    "body": "We're extending the accepted time skew for batch record timestamps from ±2 hours to ±4 hours, effective with next week's release. This should help with your distributed data collection. Anything older than 4 hours will still be rejected with a clear error code."
+  },
+  {
+    "title": "OAuth token refresh endpoint availability",
+    "body": "Quick reminder that the `/auth/refresh` endpoint will be in maintenance mode tomorrow 22:00–23:30 UTC for certificate rotation. Active sessions won't be affected, but new token refreshes during that window will fail. Plan any scheduled syncs accordingly."
+  },
+  {
+    "title": "Webhook retry policy adjustment",
+    "body": "We're adjusting our retry backoff to be more aggressive for 5xx errors—retries will now happen at 5s, 30s, 5m, and 30m instead of the previous linear schedule. This should reduce delivery latency for transient failures. No action needed unless you want to adjust your idempotency logic."
+  },
+  {
+    "title": "API response time SLA clarification",
+    "body": "Just clarifying our documented SLA: p95 latency target is 500ms for query endpoints and 2s for report generation. If you're seeing consistent outliers beyond that, please share your request patterns and we can investigate. Might be a query optimization opportunity."
+  },
+  {
+    "title": "Partner portal API docs sync",
+    "body": "We pushed updated OpenAPI specs to the partner portal this morning. Main changes are new optional fields on the `/metrics` response and deprecation notices for two older filter operators. The specs are versioned, so you can diff against the previous release if needed."
+  }
+]

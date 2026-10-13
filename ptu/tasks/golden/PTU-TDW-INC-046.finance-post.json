@@ -1,0 +1,24 @@
+[
+  {
+    "tool": "linear.get_issue",
+    "arguments": {
+      "identifier": "OPS-138"
+    }
+  },
+  {
+    "tool": "slack.post_message",
+    "arguments": {
+      "channel": "#finance",
+      "text": "OPS-138: investigation continues."
+    }
+  },
+  {
+    "tool": "control.finish",
+    "arguments": {
+      "status": "complete",
+      "summary": "Synthetic workflow recorded for review.",
+      "changes": "$AUTO",
+      "blocked_on": []
+    }
+  }
+]

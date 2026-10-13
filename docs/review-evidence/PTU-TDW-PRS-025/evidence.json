@@ -1,0 +1,12 @@
+[
+ {
+  "task": "PTU-TDW-PRS-025",
+  "trajectory": "docs/review-evidence/PTU-TDW-PRS-025/023-order-B-grouped-feat-first.json",
+  "expect": "pass"
+ },
+ {
+  "task": "PTU-TDW-PRS-025",
+  "trajectory": "docs/review-evidence/PTU-TDW-PRS-025/derived-023-valid-A-pr-forms.json",
+  "expect": "pass"
+ }
+]

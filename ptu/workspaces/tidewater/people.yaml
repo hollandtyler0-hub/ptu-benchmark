@@ -1,0 +1,16 @@
+workspace: tidewater
+people:
+  - {id: priya, name: Priya Natarajan, role: Engineering Manager, email: priya@tidewater.example.com}
+  - {id: jonas, name: Jonas Lindqvist, role: Web Lead, email: jonas@tidewater.example.com}
+  - {id: mira, name: Mira Okafor, role: SRE, email: mira@tidewater.example.com}
+  - {id: dev, name: Dev Patel, role: Finance, email: dev@tidewater.example.com}
+  - {id: leena, name: Leena Voss, role: API Engineer, email: leena@tidewater.example.com}
+  - {id: noor, name: Noor Adebayo, role: Product Engineer, email: noor@tidewater.example.com}
+  - {id: sam, name: Sam Verdan, role: Vendor Contact, email: sam@vendorsync.example.net}
+  - {id: ravi, name: Ravi Mehta, role: Release Manager, email: ravi@tidewater.example.com}
+  - {id: tomas, name: Tomas Herrera, role: Billing On-call, email: tomas@tidewater.example.com}
+  - {id: anika, name: Anika Sato, role: Finance Director, email: anika@tidewater.example.com}
+  - {id: talia, name: Talia Verne, role: Documentation Lead, email: talia@tidewater.example.com}
+  - {id: oren, name: Oren Vale, role: Infrastructure Engineer, email: oren@tidewater.example.com}
+  - {id: inez, name: Inez Calder, role: Data Engineer, email: inez@tidewater.example.com}
+  - {id: faye, name: Faye Solan, role: Partner Contact, email: faye@harborlink.example.org}

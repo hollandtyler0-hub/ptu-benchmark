@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""Pinned Git entry point; push uses the single-process PTU transport."""
+
+import configparser
+import os
+import re
+import sys
+from pathlib import Path
+
+
+REAL_GIT = str(Path(__file__).with_name("ptu-real-git"))
+REPO = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\Z")
+BRANCH = re.compile(r"[A-Za-z0-9_./-]+\Z")
+
+
+def fail(message="E_GIT_PUSH_ARGS"):
+    print(message, file=sys.stderr)
+    return 1
+
+
+def main(argv):
+    worktree_args = list(argv)
+    identity = {}
+    while len(worktree_args) >= 2 and worktree_args[0] == '-c':
+        key, separator, value = worktree_args[1].partition('=')
+        if not separator or key not in {'user.name', 'user.email'} or key in identity:
+            break
+        identity[key] = value
+        worktree_args = worktree_args[2:]
+    if worktree_args and worktree_args[0] in {'merge', 'rebase', 'stash'}:
+        if identity and set(identity) != {'user.name', 'user.email'}:
+            return fail('E_GIT_ARGS')
+        git_dir = Path('.git')
+        if not git_dir.is_dir() or git_dir.is_symlink():
+            return fail('E_GIT_WORKTREE')
+        parser = configparser.ConfigParser(interpolation=None)
+        if not parser.read(git_dir / 'config'):
+            return fail('E_GIT_WORKTREE')
+        url = parser.get('remote "origin"', 'url', fallback='')
+        repo = url.removeprefix('ptu://')
+        if not url.startswith('ptu://') or not REPO.fullmatch(repo):
+            return fail('E_GIT_WORKTREE')
+        client = str(Path(__file__).with_name('ptu-git'))
+        os.execv(client, [client, 'worktree', repo, *worktree_args,
+                          *(['--ptu-identity', identity['user.name'], identity['user.email']]
+                            if identity else [])])
+    if argv and argv[0] == 'fetch':
+        if argv[1:] not in (['origin'], ['origin', 'main']):
+            return fail()
+        git_dir = Path('.git')
+        if not git_dir.is_dir() or git_dir.is_symlink():
+            return fail()
+        parser = configparser.ConfigParser(interpolation=None)
+        if not parser.read(git_dir / 'config'):
+            return fail()
+        url = parser.get('remote "origin"', 'url', fallback='')
+        repo = url.removeprefix('ptu://')
+        if not url.startswith('ptu://') or not REPO.fullmatch(repo):
+            return fail()
+        client = str(Path(__file__).with_name('ptu-git'))
+        os.execv(client, [client, 'fetch', repo, 'main'])
+    if not argv or argv[0] != "push":
+        os.execv(REAL_GIT, [REAL_GIT, *argv])
+    args = argv[1:]
+    force = False
+    positional = []
+    for arg in args:
+        if arg in {"-u", "--set-upstream"}:
+            continue
+        if arg in {"-f", "--force"}:
+            force = True
+            continue
+        if arg.startswith("-"):
+            return fail()
+        positional.append(arg)
+    if len(positional) > 2 or (positional and positional[0] != "origin"):
+        return fail()
+    git_dir = Path(".git")
+    if not git_dir.is_dir() or git_dir.is_symlink():
+        return fail()
+    parser = configparser.ConfigParser(interpolation=None)
+    if not parser.read(git_dir / "config"):
+        return fail()
+    url = parser.get('remote "origin"', "url", fallback="")
+    repo = url.removeprefix("ptu://")
+    if not url.startswith("ptu://") or not REPO.fullmatch(repo):
+        return fail()
+    head = (git_dir / "HEAD").read_text().strip()
+    if not head.startswith("ref: refs/heads/"):
+        return fail()
+    branch = head.removeprefix("ref: refs/heads/")
+    spec = positional[1] if len(positional) == 2 else "HEAD"
+    source, sep, target = spec.partition(":")
+    if not sep:
+        target = branch if source == "HEAD" else source
+    if target.startswith("refs/heads/"):
+        target = target.removeprefix("refs/heads/")
+    if not BRANCH.fullmatch(target) or ".." in target or target.endswith("/"):
+        return fail()
+    if source != "HEAD":
+        if not BRANCH.fullmatch(source) or ".." in source:
+            return fail()
+        source = "refs/heads/" + source.removeprefix("refs/heads/")
+    client = str(Path(__file__).with_name("ptu-git"))
+    os.execv(client, [client, "push", repo, source + ":refs/heads/" + target,
+                      *(["--force"] if force else [])])
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main(sys.argv[1:]))
+    except (OSError, ValueError, configparser.Error):
+        raise SystemExit(fail())

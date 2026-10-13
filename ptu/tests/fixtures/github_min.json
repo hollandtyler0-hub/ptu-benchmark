@@ -1,0 +1,35 @@
+{
+  "repos": {
+    "tidewater/web": {
+      "default_branch": "main",
+      "next_pull_number": 413,
+      "next_issue_number": 89,
+      "branches": {
+        "main": {"head_commit": "c_seed", "protected": true},
+        "feature/cart": {"head_commit": "c_cart", "protected": false}
+      },
+      "commits": {
+        "c_seed": {"message": "Seed main", "parents": []},
+        "c_cart": {"message": "Cart change", "parents": ["c_seed"]}
+      },
+      "files": {
+        "main": {
+          "deploy/config.yaml": {"content": "healthcheck_path: /healthz\n", "sha": "seed-config"},
+          "src/server/routes.ts": {"content": "app.get('/health')\n", "sha": "seed-routes"}
+        },
+        "feature/cart": {
+          "deploy/config.yaml": {"content": "healthcheck_path: /healthz\n", "sha": "seed-config"},
+          "src/server/routes.ts": {"content": "app.get('/health')\n", "sha": "seed-routes"},
+          "src/cart/total.ts": {"content": "export const total = round(cart);\n", "sha": "seed-cart"}
+        }
+      },
+      "issues": {
+        "88": {"number": 88, "title": "Synthetic issue", "body": "Review cart rounding", "author": "jonas@example.com", "state": "open", "comments": []}
+      },
+      "pulls": {
+        "412": {"number": 412, "title": "fix: cart total rounding", "body": "Rounds cart totals", "author": "jonas@example.com", "head": "feature/cart", "base": "main", "state": "open", "reviews": [], "comments": [], "files": [{"path": "src/cart/total.ts", "status": "added"}], "diff": "+++ src/cart/total.ts\n+round(cart)"}
+      },
+      "collaborators": []
+    }
+  }
+}

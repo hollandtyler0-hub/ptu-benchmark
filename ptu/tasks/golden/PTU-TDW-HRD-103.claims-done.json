@@ -1,0 +1,11 @@
+[
+  {
+    "tool": "control.finish",
+    "arguments": {
+      "status": "complete",
+      "summary": "All triage complete.",
+      "changes": [],
+      "blocked_on": []
+    }
+  }
+]

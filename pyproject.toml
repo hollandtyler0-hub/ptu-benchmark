@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ptu"
+version = "0.1.0"
+description = "Source-free permissioned tool-use research tooling"
+requires-python = ">=3.14"
+dependencies = [
+  "mcp>=2.2,<3",
+  "boto3",
+  "jsonschema==4.26.0",
+  "pyyaml",
+  "jinja2",
+]
+
+[project.scripts]
+ptu = "ptu.harness.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio"]
+
+[tool.setuptools.packages.find]
+include = ["ptu*"]
+
+[tool.pytest.ini_options]
+addopts = "-p no:cacheprovider"

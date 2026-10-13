@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use PTU, please cite it as below."
+title: "PTU: a permissioned tool-use benchmark"
+type: software
+authors:
+  - family-names: Holland
+    given-names: Tyler
+version: 0.1.0
+date-released: 2026-10-13
+license: Apache-2.0
+repository-code: "https://github.com/hollandtyler0-hub/ptu-benchmark"
+keywords:
+  - benchmark
+  - AI agents
+  - tool use
+  - permissions
+  - AI safety
+  - evaluation

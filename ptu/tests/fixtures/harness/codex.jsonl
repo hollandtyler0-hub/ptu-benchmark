@@ -1,0 +1,4 @@
+{"type":"item.started","item":{"id":"synthetic-1","type":"mcp_tool_call","server":"ptu","tool":"github__get_pull_request"}}
+{"type":"item.started","item":{"id":"synthetic-2","type":"command_execution","command":"synthetic"}}
+{"type":"turn.completed","usage":{"input_tokens":60,"output_tokens":20}}
+{"type":"turn.completed","usage":{"input_tokens":100,"output_tokens":30}}
